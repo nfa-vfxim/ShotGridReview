@@ -1,0 +1,26 @@
+[About]
+Type=label
+Label=About
+Category=About Plugin
+CategoryOrder=-1
+Index=0
+Default=ShotGrid Review Plugin for Deadline
+Description=Not configurable
+
+[ConcurrentTasks]
+Type=label
+Label=ConcurrentTasks
+Category=About Plugin
+CategoryOrder=-1
+Index=0
+Default=True
+Description=Not configurable
+
+[Nuke_RenderExecutable]
+Type=multilinemultifilename
+Category=Render Executables
+CategoryOrder=0
+Index=0
+Label=Nuke 13 Executable
+Description=The path to the Nuke executable file used for rendering. Enter alternative paths on separate lines.
+Default=C:\Program Files\Nuke13.2v3\Nuke13.2.exe
