@@ -1,15 +1,13 @@
-"""This script functions
-as a bridge between our Python script and the Deadline executable."""
-
+import nuke
 import sys
 from shotgrid_review import ShotGridReview
 
 # Check before continue-ing to script
 if len(sys.argv) != 10:
     print(
-        "Usage: NUKE deadline_shotgrid_review_cli.py <first_frame> "
-        "<last_frame> <fps> <publish_id> <sequence_path> <slate_path> "
-        "<company> <colorspace_idt> <colorspace_odt>"
+        "Usage: NUKE deadline_shotgrid_review_cli.py <first_frame> <last_frame> "
+        "<fps> <publish_id> <sequence_path> <slate_path> <company> "
+        "<colorspace_idt> <colorspace_odt>"
     )
     sys.exit(-1)
 

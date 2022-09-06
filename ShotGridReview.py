@@ -48,9 +48,12 @@ class ShotGridReviewPlugin(DeadlinePlugin):
         sequence_path = self.GetPluginInfoEntryWithDefault(
             "SequencePath", self.GetDataFilename()
         )
+        sequence_path = sequence_path.replace(os.sep, "/")
+
         slate_path = self.GetPluginInfoEntryWithDefault(
             "SlatePath", self.GetDataFilename()
         )
+        slate_path = slate_path.replace(os.sep, "/")
 
         fps = self.GetPluginInfoEntryWithDefault("FPS", "")
 
