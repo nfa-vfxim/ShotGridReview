@@ -5101,7 +5101,7 @@ set N7d123800 [stack 0]
   font_size_toolbar 25
   font_width_toolbar 100
   font_height_toolbar 100
-  message "1001 - \[frame] - 1101"
+  message "\[value root.first_frame] - \[frame] - \[value root.last_frame]"
   old_message {{49 48 48 49 32 45 32 49 49 48 53 32 45 32 49 49 48 49}
     }
   old_expression_markers {{7 10}
