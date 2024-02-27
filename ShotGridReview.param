@@ -16,6 +16,30 @@ Index=0
 Default=True
 Description=Not configurable
 
+[shotgrid_site]
+Type=String
+Label=ShotGrid Site
+Category=ShotGrid
+CategoryOrder=-1
+Index=0
+Default=
+
+[script_name]
+Type=String
+Label=Script Name
+Category=ShotGrid
+CategoryOrder=-1
+Index=0
+Default=
+
+[script_key]
+Type=String
+Label=Script Key
+Category=ShotGrid
+CategoryOrder=-1
+Index=0
+Default=
+
 [Nuke_RenderExecutable]
 Type=multilinemultifilename
 Category=Render Executables

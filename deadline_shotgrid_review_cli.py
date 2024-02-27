@@ -1,13 +1,12 @@
-import nuke
 import sys
 from shotgrid_review import ShotGridReview
 
 # Check before continue-ing to script
-if len(sys.argv) != 10:
+if len(sys.argv) != 13:
     print(
         "Usage: NUKE deadline_shotgrid_review_cli.py <first_frame> <last_frame> "
-        "<fps> <publish_id> <sequence_path> <slate_path> <company> "
-        "<colorspace_idt> <colorspace_odt>"
+        "<fps> <publish_id> <sequence_path> <slate_path> <shotgrid_site> <script_name> <script_key> "
+        "<company> <colorspace_idt> <colorspace_odt>"
     )
     sys.exit(-1)
 
@@ -17,14 +16,16 @@ fps = float(sys.argv[3])
 publish_id = int(sys.argv[4])
 sequence_path = sys.argv[5]
 slate_path = sys.argv[6]
-company = sys.argv[7]
-colorspace_idt = sys.argv[8]
-colorspace_odt = sys.argv[9]
 
 # ShotGrid credentials
-shotgrid_site = "https://nfa.shotgunstudio.com"
-script_name = "DeadlineReview"
-script_key = "av$eejlrsBvrgqws4wcfchcam"
+shotgrid_site = sys.argv[7]
+script_name = sys.argv[8]
+script_key = sys.argv[9]
+
+company = sys.argv[10]
+colorspace_idt = sys.argv[11]
+colorspace_odt = sys.argv[12]
+
 
 ShotGridReview(
     publish_id=publish_id,
