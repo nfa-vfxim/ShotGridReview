@@ -13,6 +13,24 @@ import re
 from datetime import datetime
 
 
+def _link_name(link, fallback=""):
+    """Name of a ShotGrid entity link, or fallback when the field is empty.
+
+    Linked fields come back as {"type", "id", "name"} - or as None when
+    nothing is linked. A review should never fail over a label on the slate,
+    so every linked field goes through here."""
+    if isinstance(link, dict):
+        return link.get("name") or link.get("code") or fallback
+    return fallback
+
+
+def _text(value, fallback=""):
+    """A knob-safe string: None and other empties become fallback."""
+    if value is None:
+        return fallback
+    return str(value)
+
+
 class ShotGridReview(object):
     """Creates slate provided by publish data, transcodes and
     uploads to ShotGrid.
@@ -79,6 +97,18 @@ class ShotGridReview(object):
 
             # Get publish data
             publish_data = self.__get_publish_data(publish_id)
+            if not publish_data:
+                raise RuntimeError(
+                    "PublishedFile %s not found in ShotGrid - was it deleted, "
+                    "or does the script user lack access to it?" % publish_id
+                )
+
+            # A publish without a Task still gets a review: try to find the
+            # task it belongs to, and repair the publish when that works.
+            if not publish_data.get("task"):
+                publish_data["task"] = self.__resolve_task(
+                    publish_data, sequence_path
+                )
 
             # Create slate
             slate = self.__setup_slate(
@@ -252,6 +282,57 @@ class ShotGridReview(object):
 
         return publish
 
+    def __resolve_task(self, publish_data, sequence_path):
+        """Find the Task for a publish that has none, and link it.
+
+        Tasks on the publish's entity are matched against the folders in the
+        render path (".../Comp/nuke/..." -> the Comp task). When the entity
+        has exactly one task, that one is used. The publish is updated so the
+        next job - and everything else reading it - sees the task too.
+
+        Returns the task link, or None when no unambiguous task exists; the
+        review then goes ahead without one."""
+        entity = publish_data.get("entity")
+        if not entity:
+            print("WARNING: publish has no task and no entity, continuing without task")
+            return None
+        try:
+            tasks = self.sg.find(
+                "Task", [["entity", "is", entity]], ["content", "step"]
+            )
+        except Exception as error:
+            print("WARNING: could not look up tasks: %s" % error)
+            return None
+
+        folders = set(
+            part.lower() for part in re.split(r"[\\/]+", sequence_path or "") if part
+        )
+        matches = [
+            task
+            for task in tasks
+            if _link_name(task.get("step")).lower() in folders
+            or (task.get("content") or "").lower() in folders
+        ]
+        if len(matches) != 1:
+            matches = tasks if len(tasks) == 1 else []
+        if not matches:
+            print(
+                "WARNING: publish has no task and none could be determined "
+                "(%d task(s) on %s), continuing without task"
+                % (len(tasks), _link_name(entity, "the entity"))
+            )
+            return None
+
+        task = matches[0]
+        link = {"type": "Task", "id": task["id"], "name": task.get("content")}
+        try:
+            self.sg.update("PublishedFile", publish_data["id"], {"task": link})
+            print("Linked publish to task '%s'" % task.get("content"))
+        except Exception as error:
+            print("WARNING: found task '%s' but could not link the publish: %s"
+                  % (task.get("content"), error))
+        return link
+
     @staticmethod
     def __setup_slate(
         read_node,
@@ -283,16 +364,14 @@ class ShotGridReview(object):
         slate = nuke.createNode("nfaSlate")
 
         # Get project name
-        project_name = publish_data.get("project")
-        project_name = project_name.get("name")
-
+        project_name = _link_name(publish_data.get("project"), "-")
         slate.knob("project").setValue(project_name)
 
         # Set company name
-        slate.knob("company").setValue(company)
+        slate.knob("company").setValue(_text(company))
 
         # Get file name from publish data
-        submission_name = publish_data.get("code")
+        submission_name = _text(publish_data.get("code"), "-")
         slate.knob("file").setValue(submission_name)
 
         # Create frame list
@@ -309,19 +388,15 @@ class ShotGridReview(object):
         slate.knob("date").setValue(date)
 
         # Get artist name
-        artist = publish_data.get("created_by")
-        artist = artist.get("name")
-
+        artist = _link_name(publish_data.get("created_by"), "-")
         slate.knob("artist").setValue(artist)
 
-        task = publish_data.get("task")
-        task = task.get("name")
-
+        task = _link_name(publish_data.get("task"), "-")
         slate.knob("task").setValue(task)
 
         # Get version number
         version = publish_data.get("version_number")
-        version = "v%03d" % version
+        version = "v%03d" % version if isinstance(version, int) else "-"
 
         slate.knob("version").setValue(version)
 
@@ -329,11 +404,11 @@ class ShotGridReview(object):
         slate.knob("fps").setValue(fps)
 
         # Set colorspace
-        slate.knob("colorspaceIDT").setValue(colorspace_idt)
-        slate.knob("colorspaceODT").setValue(colorspace_odt)
+        slate.knob("colorspaceIDT").setValue(_text(colorspace_idt))
+        slate.knob("colorspaceODT").setValue(_text(colorspace_odt))
 
         # Get description
-        description = publish_data.get("description")
+        description = _text(publish_data.get("description"))
         slate.knob("description").setValue(description)
 
         # Set read node as input for slate node
@@ -398,7 +473,10 @@ class ShotGridReview(object):
             print("Rendering complete")
 
         except Exception as error:
+            # Re-raised: uploading a movie that was never written only moves
+            # the failure to ShotGrid, where nobody looks for it.
             print("Could not render because %s" % str(error))
+            raise
 
     def __upload_to_shotgrid(
         self,
@@ -430,8 +508,8 @@ class ShotGridReview(object):
 
         entity = publish_data.get("entity")
 
-        task = publish_data.get("task")
-        task_id = task.get("id")
+        task = publish_data.get("task") or None
+        task_id = task.get("id") if isinstance(task, dict) else None
 
         user = publish_data.get("created_by")
 
@@ -451,10 +529,15 @@ class ShotGridReview(object):
             "frame_range": "%s-%s" % (first_frame, last_frame),
             "sg_movie_has_slate": True,
             "entity": entity,
-            "sg_task": task,
             "user": user,
             "published_files": [{"type": "PublishedFile", "id": publish_id}],
         }
+
+        if task_id:
+            data["sg_task"] = task
+
+        if not os.path.isfile(slate_path):
+            raise RuntimeError("Slate movie was not written: %s" % slate_path)
 
         # Create Version
         version = self.sg.create("Version", data).get("id")
@@ -465,7 +548,13 @@ class ShotGridReview(object):
         print("Uploaded to ShotGrid")
 
         # Update task status to review
-        self.sg.update("Task", task_id, {"sg_status_list": "rev"})
+        if task_id:
+            try:
+                self.sg.update("Task", task_id, {"sg_status_list": "rev"})
+            except Exception as error:
+                print("WARNING: could not set task status: %s" % error)
+        else:
+            print("No task on this publish - task status left unchanged")
 
     @staticmethod
     def __get_frame_sequences(
