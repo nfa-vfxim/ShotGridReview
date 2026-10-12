@@ -203,8 +203,11 @@ class ShotGridReview(object):
         nuke.root().knob("first_frame").setValue(first_frame)
         nuke.root().knob("last_frame").setValue(last_frame)
         nuke.root().knob("fps").setValue(fps)
+        # The config comes from the OCIO variable (set in JobPreLoad.py when
+        # the Worker lacks it): Nuke -t doesn't load a config chosen on the
+        # Root knobs. Don't pick an OCIO_config menu entry, those are
+        # Nuke's built-in configs.
         nuke.root().knob("colorManagement").setValue("OCIO")
-        nuke.root().knob("OCIO_config").setValue(1)
 
         print("Setup script completed")
 

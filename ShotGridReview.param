@@ -46,5 +46,5 @@ Category=Nuke Render Executables
 CategoryOrder=0
 CategoryIndex=0
 Label=Nuke Render Executable
-Default=
+Default=C:\Program Files\Nuke17.0v1\Nuke17.0.exe
 Description=The path to the Nuke executable file used for rendering. Enter alternative paths on separate lines.
