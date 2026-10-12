@@ -42,9 +42,9 @@ Default=
 
 [Nuke_RenderExecutable]
 Type=multilinemultifilename
-Category=Render Executables
+Category=Nuke Render Executables
 CategoryOrder=0
-Index=0
-Label=Nuke 15 Executable
+CategoryIndex=0
+Label=Nuke Render Executable
+Default=
 Description=The path to the Nuke executable file used for rendering. Enter alternative paths on separate lines.
-Default=C:\Program Files\Nuke15.0v1\Nuke15.0.exe

@@ -7,4 +7,6 @@ def __main__(deadlinePlugin):
     deadlinePlugin.LogInfo("JobName: %s" % job.JobName)
     deadlinePlugin.LogInfo("JobId: %s" % job.JobId)
 
-    # Any custom pre job code, such as adding environments
+    deadlinePlugin.LogInfo("Setting PYTHONPATH variable")
+    python_path = "C:/pipeline/packages"
+    deadlinePlugin.SetProcessEnvironmentVariable("PYTHONPATH", python_path)

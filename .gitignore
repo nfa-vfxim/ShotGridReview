@@ -129,3 +129,5 @@ dmypy.json
 .pyre/
 
 .DS_Store
+# Holds the ShotGrid script key on the Deadline repository; never commit it.
+ShotGridValues.txt

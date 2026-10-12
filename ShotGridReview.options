@@ -1,0 +1,70 @@
+[FirstFrame]
+Type=Integer
+Description=first frame from frame sequence
+
+[LastFrame]
+Type=Integer
+Description=first frame from frame sequence
+
+[SequencePath]
+Type=String
+Description=path to frame sequence
+
+[SlatePath]
+Type=String
+Description=path to render slate
+
+[FPS]
+Type=Float
+Description=FPS used by project. Defaults to 25.0.
+Required=false
+Default=25.0
+
+[Company]
+Type=String
+Description=Company name to add to slate. Defaults to "ShotGrid".
+Required=false
+Default=ShotGrid
+
+[ColorspaceIDT]
+Type=String
+Description=Input colorspace. Defaults to "ACES - ACEScg".
+Required=false
+Default=ACES - ACEScg
+
+[ColorspaceODT]
+Type=String
+Description=Output colorspace. Defaults to "Output - sRGB".
+Required=false
+Default=Output - sRGB
+
+[UserId]
+Type=Integer
+Description=User id of the user
+Required=false
+DisableIfBlank=false
+
+[EntityType]
+Type=Integer
+Description=Type of the entity to link to the version.
+Required=false
+DisableIfBlank=false
+
+[EntityId]
+Type=Integer
+Description=Entity id to link to the version.
+Required=false
+DisableIfBlank=false
+
+[PublishId]
+Type=Integer
+Description=Publish ID of published file to link to the version.
+Required=false
+DisableIfBlank=false
+
+[VersionId]
+Type=Integer
+Label=Version Id
+Description=Version id to update. When not specified, a new version will be created.
+Required=false
+DisableIfBlank=false
